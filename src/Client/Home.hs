@@ -1,3 +1,5 @@
+{-# LANGUAGE TemplateHaskell #-}
+{-# LANGUAGE QuasiQuotes #-}
 {-# LANGUAGE RecordWildCards #-}
 {-# LANGUAGE FlexibleContexts #-}
 {-# LANGUAGE ExistentialQuantification #-}
@@ -12,13 +14,13 @@ import           React
 import           React.Internal
 import           React.Ace
 import           React.Component
-import           React.Lens
 
 import           Control.Applicative
 import           Control.Concurrent
 import           Control.Concurrent.STM
 import           Control.Concurrent.STM.SwapQueue
 import           Control.Exception
+import           Control.Lens
 import           Control.Monad
 import           Control.Monad.Reader
 import           Data.Function
@@ -44,10 +46,32 @@ import           GHCJS.Foreign
 #endif
 
 --------------------------------------------------------------------------------
--- Reader data for the application
+-- Types for the application
 
 data AppReader =
   AppReader {appRunTypes :: (IO [(Span,Text)] -> IO (Maybe [(Span,Text)]))}
+
+-- | The app state that is rendered to a view.
+data State
+  = StartingState
+  | ChooseTargetsState !(Map TargetIdent Bool)
+  | LoadingProjectState !LoadingStatus
+  | LoadedState !Loaded
+  | FailedState ![Either Text Error]
+  deriving (Eq,Show)
+
+-- | Loaded state.
+data Loaded =
+  Loaded {_loadedModules  :: ![Text]
+         ,_loadedCurrent  :: !(Maybe (Text,Text,Int,Int,Int,Int))
+         ,_loadedAce      :: !Ace
+         ,_loadedTypeInfo :: !(Maybe (Maybe Span,Span,Text))
+         ,_loadedMouseXY  :: !(Maybe (Int,Int))
+         ,_loadedTargets  :: !(Map TargetIdent Bool)}
+  deriving (Eq,Show)
+
+$(makePrisms ''State)
+$(makeLenses ''Loaded)
 
 --------------------------------------------------------------------------------
 -- Main application
@@ -86,35 +110,35 @@ loadingProcess (App var _ _ _) =
               Left ex ->
                 case ex of
                   BadStatusCode status ->
-                    do setTVarIO
-                                                (FailedState
-                                                   (concat [[Left "Bad HTTP status code from server."
-                                                            ,Left ("Status code was: " <>
-                                                                   T.pack (show status))]
-                                                           ,[Left "This probably means you stopped the server." | status ==
-                                                                                                                    0]]))
-                                                var
+                    do setTVarIO (FailedState
+                                    (concat [[Left "Bad HTTP status code from server."
+                                             ,Left ("Status code was: " <>
+                                                    T.pack (show status))]
+                                            ,[Left "This probably means you stopped the server." | status ==
+                                                                                                     0]]))
+                                 var
                   DecodingError msg payload ->
                     setTVarIO (FailedState
-                                              [Left "Unable to decode JSON from server. Consider this a bug."
-                                              ,Left ("Decoding error was: " <> T.pack msg)
-                                              ,Left ("Payload was: " <> payload)])
-                                           var
+                                 [Left "Unable to decode JSON from server. Consider this a bug."
+                                 ,Left ("Decoding error was: " <> T.pack msg)
+                                 ,Left ("Payload was: " <> payload)])
+                              var
                   NoData ->
                     setTVarIO (FailedState [Left "No data from server when calling command. Please report this as a bug."])
-                                           var
+                              var
               Right status ->
                 case status of
                   AmbiguousTargets targets ->
-                    do setTVarIO (ChooseTargetsState (M.fromList (map defaultChosenTarget targets))) var
+                    do setTVarIO (ChooseTargetsState (M.fromList (map defaultChosenTarget targets)))
+                                 var
                        loop False
                   LoadOK targets ms ->
                     do ace <- defaultAce
                        setTVarIO (LoadedState
-                                       (defaultLoaded (M.fromList targets)
-                                                      ms
-                                                      ace))
-                                    var
+                                    (defaultLoaded (M.fromList targets)
+                                                   ms
+                                                   ace))
+                                 var
                        loop False
                   LoadFailed errs ->
                     do setTVarIO (FailedState errs) var
@@ -149,61 +173,10 @@ defaultChosenTarget t =
      _ -> False)
 
 --------------------------------------------------------------------------------
--- Functional references
-
--- | A prism for the 'ChooseTargetsState' constructor.
-chooseTargetsStateR :: Lens' State (Maybe (Map TargetIdent Bool))
-chooseTargetsStateR f s =
-    undefined
-  {-case s of
-    ChooseTargetsState m -> fmap ChooseTargetsState (f (Just m))
-    _ -> fmap (const s) (f Nothing)-}
-  {-Prism (\state ->
-           case state of
-             ChooseTargetsState m -> Just m
-             _ -> Nothing)
-        (\m state ->
-           case state of
-             ChooseTargetsState _ ->
-               ChooseTargetsState m
-             _ -> state)-}
-
--- | A prism for the 'ChooseTargetsState' constructor.
-loadedR :: Lens' State (Maybe Loaded)
-loadedR = undefined
-  {-Prism (\state ->
-           case state of
-             LoadedState m -> Just m
-             _ -> Nothing)
-        (\m state ->
-           case state of
-             LoadedState _ -> LoadedState m
-             _ -> state)-}
-
---------------------------------------------------------------------------------
 -- Main rendering setup
 
--- | The app state that is rendered to a view.
-data State
-  = StartingState
-  | ChooseTargetsState !(Map TargetIdent Bool)
-  | LoadingProjectState !LoadingStatus
-  | LoadedState !Loaded
-  | FailedState ![Either Text Error]
-  deriving (Eq,Show)
-
--- | Loaded state.
-data Loaded =
-  Loaded {loadedModules  :: ![Text]
-         ,loadedCurrent  :: !(Maybe (Text,Text,Int,Int,Int,Int))
-         ,loadedAce      :: !Ace
-         ,loadedTypeInfo :: !(Maybe (Maybe Span,Span,Text))
-         ,loadedMouseXY  :: !(Maybe (Int,Int))
-         ,loadedTargets  :: !(Map TargetIdent Bool)}
-  deriving (Eq,Show)
-
 -- | Our main view.
-render :: MonadReader AppReader m
+render :: (MonadReader AppReader m,MonadIO m)
        => Component State Ace m -> State -> ReactT State m ()
 render ace state =
   case state of
@@ -277,7 +250,7 @@ renderTarget targets (ident,chosen) =
                              then "unchooseable"
                              else "choosable")
             unless unchoosable
-                   (onClick (const (modifyAt chooseTargetsStateR (fmap (M.insert ident (not chosen))))))
+                   (onClick (const (modifyTVarIO _ChooseTargetsState (M.insert ident (not chosen)))))
             case ident of
               LibraryIdent -> "Library"
               ExecutableIdent name ->
@@ -371,7 +344,7 @@ renderSpan (Span sl sc el ec) =
 --------------------------------------------------------------------------------
 -- Loaded screen
 
-loaded :: (MonadReader AppReader m)
+loaded :: (MonadReader AppReader m,MonadIO m)
        => Component State Ace m -> Loaded -> ReactT State m ()
 loaded ace Loaded{..} =
   build "div"
@@ -379,9 +352,9 @@ loaded ace Loaded{..} =
             build "table"
                   (build "tbody"
                          (build "tr"
-                                (do build "td" (modules loadedTargets loadedModules loadedCurrent)
-                                    build "td" (pane ace loadedCurrent))))
-            case (,) <$> loadedTypeInfo <*> loadedMouseXY of
+                                (do build "td" (modules _loadedTargets _loadedModules _loadedCurrent)
+                                    build "td" (pane ace _loadedCurrent))))
+            case (,) <$> _loadedTypeInfo <*> _loadedMouseXY of
               Nothing -> return ()
               Just ((_,_,typ'),(x,y)) ->
                 build "div"
@@ -402,7 +375,7 @@ loaded ace Loaded{..} =
                                    (do attr "className" "display"
                                        text typ')))
   where expandSelection _ _ var =
-          do mloaded <- readAt loadedR var
+          do mloaded <- previewTVarIO _LoadedState var
              case mloaded of
                Just (Loaded _ _ _ ty xy _) ->
                  case (,) <$> ty <*> xy of
@@ -414,7 +387,7 @@ loaded ace Loaded{..} =
                _ -> return ()
 
 -- | The code viewing pane.
-pane :: MonadReader AppReader m
+pane :: (MonadReader AppReader m,MonadIO m)
      => Component State Ace m -> Maybe (t,Text,Int,Int,Int,Int) -> ReactT State m ()
 pane ace mcur =
   do attr "className" "pane"
@@ -422,7 +395,7 @@ pane ace mcur =
        Just (_,contents,sl,sc,el,ec) ->
          buildComponent
            ace
-           aceLens
+           (_LoadedState . loadedAce)
            (do onDblClick (\_ var -> doubleClicked var)
                onAceClick
                  (\e var ->
@@ -432,22 +405,20 @@ pane ace mcur =
                        sc' <- aceSelectStartCol e
                        el' <- aceSelectEndLine e
                        ec' <- aceSelectEndCol e
-                       select (x,y) (Span sl' sc' el' ec') var)
+                       select (x,y)
+                              (Span sl' sc' el' ec')
+                              var)
                attr "code" contents
                attr "start-line" (T.pack (show sl))
                attr "start-col" (T.pack (show sc))
                attr "end-line" (T.pack (show el))
                attr "end-col" (T.pack (show ec)))
        _ -> "Choose a module!"
-  where aceLens = undefined
-          {-Lens (\(LoadedState (Loaded _ _ ace' _ _ _)) -> ace')
-               (\ace' (LoadedState (Loaded b c _ e f x)) ->
-                  LoadedState (Loaded b c ace' e f x))-}
 
 -- | Jump to place definition on double click.
 doubleClicked :: TVar State -> IO ()
 doubleClicked var =
-  do mloaded <- readAt loadedR var
+  do mloaded <- previewTVarIO _LoadedState var
      case mloaded of
        Just (Loaded ms mcur _ mspan _ _) ->
          case liftA2 (,) mcur mspan of
@@ -463,33 +434,34 @@ doubleClicked var =
 -- | Select the given span and trigger a state update.
 select :: (Int,Int) -> Span -> TVar State -> IO ()
 select xy sp@(Span sl sc el ec) var =
-  do mloaded <- readAt loadedR var
+  do mloaded <- previewTVarIO _LoadedState var
      case mloaded of
-       Just l@(Loaded{loadedCurrent = Just (fp,text',_,_,_,_)}) ->
-         do unless (noChange (loadedTypeInfo l))
-                   (do spans <- call (GetExpTypes fp
-                                                  (Span sl sc el ec))
-                       setAt loadedR
-                         (Just (case sortBy (on thinner fst) spans of
-                                  ((child,typ):parents) ->
-                                    l {loadedCurrent =
-                                         Just (fp,text',sl,sc,el,ec)
-                                      ,loadedTypeInfo =
-                                         Just (listToMaybe (filter (/= child) (map fst parents))
-                                              ,child
-                                              ,typ)
-                                      ,loadedMouseXY =
-                                         Just xy}
-                                  _ ->
-                                    let new =
-                                          defaultLoaded (loadedTargets l)
-                                                        (loadedModules l)
-                                                        (loadedAce l)
-                                    in new {loadedCurrent =
-                                              Just (fp,text',sl,sc,el,ec)
-                                           ,loadedMouseXY =
-                                              Just xy}))
-                         var)
+       Just l@(Loaded{_loadedCurrent = Just (fp,text',_,_,_,_)}) ->
+         do unless (noChange (_loadedTypeInfo l))
+                   (do spans <-
+                         call (GetExpTypes fp
+                                           (Span sl sc el ec))
+                       setTVarAt _LoadedState
+                                 ((case sortBy (on thinner fst) spans of
+                                     ((child,typ):parents) ->
+                                       l {_loadedCurrent =
+                                            Just (fp,text',sl,sc,el,ec)
+                                         ,_loadedTypeInfo =
+                                            Just (listToMaybe (filter (/= child) (map fst parents))
+                                                 ,child
+                                                 ,typ)
+                                         ,_loadedMouseXY =
+                                            Just xy}
+                                     _ ->
+                                       let new =
+                                             defaultLoaded (_loadedTargets l)
+                                                           (_loadedModules l)
+                                                           (_loadedAce l)
+                                       in new {_loadedCurrent =
+                                                 Just (fp,text',sl,sc,el,ec)
+                                              ,_loadedMouseXY =
+                                                 Just xy}))
+                                 var)
        _ -> return ()
   where noChange Nothing = False
         noChange (Just (_,cur,_)) = cur == sp
@@ -531,14 +503,14 @@ viewModule :: [Text] -> Text -> Int -> Int -> TVar State -> IO ()
 viewModule ms fp line col var =
   do contents <- call (GetModule fp)
      ace <- defaultAce
-     {-mloaded <- readAt loadedR var-}
-     return ()
-     {-modifyAt loadedR
-                 (\l -> l {loadedCurrent =
-                             (Just (fp,contents,line,col,line,col))
-                          ,loadedTypeInfo = Nothing
-                          ,loadedMouseXY = Nothing})
-                 var-}
+     modifyTVarIO
+       _LoadedState
+       (\l ->
+          l {_loadedCurrent =
+               (Just (fp,contents,line,col,line,col))
+            ,_loadedTypeInfo = Nothing
+            ,_loadedMouseXY = Nothing})
+       var
 
 --------------------------------------------------------------------------------
 -- Utilities
@@ -554,14 +526,33 @@ centered inner =
                              (do attr "className" "inner"
                                  build "div" inner))))
 
+--------------------------------------------------------------------------------
+-- TVar lens things
+
 setTVarIO :: a -> TVar a -> IO ()
-setTVarIO = undefined
+setTVarIO a v =
+  atomically (writeTVar v a)
 
-setAt :: Lens' s a -> a -> TVar s -> IO ()
-setAt = undefined
+setTVarAt :: ASetter' s a -> a -> TVar s -> IO ()
+setTVarAt l a v =
+  atomically
+    (modifyTVar v
+                (set l a))
 
-modifyAt :: Lens' s a -> (a -> a) -> TVar s -> IO ()
-modifyAt = undefined
+modifyTVarIO :: ASetter' s a -> (a -> a) -> TVar s -> IO ()
+modifyTVarIO l f v =
+  atomically
+    (modifyTVar v
+                (over l f))
 
-readAt :: Lens' s (Maybe a) -> TVar s -> IO (Maybe a)
-readAt = undefined
+viewTVarIO :: Getting a s a -> TVar s -> IO a
+viewTVarIO g v =
+  atomically
+    (fmap (view g)
+          (readTVar v))
+
+previewTVarIO :: Getting (First a) s a -> TVar s -> IO (Maybe a)
+previewTVarIO g v =
+  atomically
+    (fmap (preview g)
+          (readTVar v))

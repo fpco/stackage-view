@@ -22,14 +22,13 @@ module React.Ace
   where
 
 import Control.Concurrent.STM
+import Control.Lens hiding (coerce)
 import Control.Monad
 import GHC.Exts
 import GHCJS.Compat
 import React
 import React.Component
 import React.Internal
-import React.Lens
-import React.Ref
 
 #ifdef __GHCJS__
 import JavaScript.JQuery (JQuery)
@@ -76,7 +75,7 @@ createAce app =
               (receivingProps app))
 
 -- | Setup the ace editor.
-didMount :: App a m -> Lens' a Ace -> JQuery -> JSRef this -> IO ()
+didMount :: App a m -> Traversal' a Ace -> JQuery -> JSRef this -> IO ()
 didMount app r el this =
   do props <- getProp ("props" :: JSString) this
      onClickFun <- getProp ("onClick" :: JSString) props
@@ -89,18 +88,18 @@ didMount app r el this =
                    (set r (Ace (Just editor))))
 
 -- | New code attribute has been set, update the editor contents.
-receivingProps :: App state m -> Lens' state Ace -> JSRef a -> IO ()
+receivingProps :: App state m -> Traversal' state Ace -> JSRef a -> IO ()
 receivingProps app l props =
   do codeRef <- getProp ("code" :: JSString) props
      mcode <- fromJSRef codeRef
      case mcode of
        Nothing -> return ()
        Just (code :: JSString) ->
-         do Ace meditor <- fmap (view l)
-                                (atomically (readTVar (appState app)))
+         do meditor <- fmap (preview l)
+                            (atomically (readTVar (appState app)))
             case meditor of
               Nothing -> return ()
-              Just editor ->
+              Just (Ace (Just editor)) ->
                 do code' <- getValue editor
                    when (code /= code')
                         (setValue editor code)
@@ -128,6 +127,7 @@ receivingProps app l props =
                              ,curEndCol))
                             (setRange editor (sl-1) (sc-1) (el-1) (ec-1))
                      _ -> return ()
+              _ -> return ()
 
 --------------------------------------------------------------------------------
 -- Selection range accessors
