@@ -1,0 +1,17 @@
+dist*
+static/tmp/
+static/ghcjs-cache/
+static/combined/
+*.hi
+*.o
+*.js_hi
+*.js_o
+*.sqlite3
+.hsenv*
+cabal-dev/
+yesod-devel/
+.cabal-sandbox
+cabal.sandbox.config
+.DS_Store
+*.swp
+TAGS

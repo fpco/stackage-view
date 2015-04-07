@@ -1,0 +1,271 @@
+body {
+  font-family: "Lato", sans-serif;
+}
+.starting {
+  position: absolute;
+  width: 100%;
+  height: 100%;
+  background: #e8eaec;
+
+  img {
+    width: 250px;
+  }
+  table {
+    margin: auto;
+    width: 100%;
+    height: 100%;
+    td {
+      vertical-align: middle;
+      div {
+        text-align: center;
+        margin: auto;
+        width: 250px;
+        color: #777;
+      }
+    }
+  }
+}
+.loading {
+  position: absolute;
+  width: 100%;
+  height: 100%;
+  background: #1568ae;
+
+  img {
+    width: 250px;
+  }
+  table {
+    margin: auto;
+    width: 100%;
+    height: 100%;
+    td {
+      vertical-align: middle;
+    }
+    td > div {
+      margin: auto;
+      width: 250px;
+      color: #fff;
+    }
+  }
+}
+
+.failed {
+  position: absolute;
+  width: 100%;
+  height: 100%;
+  background: #ae3a15;
+  pre {
+    background: inherit;
+    border: 0;
+    color: #fff;
+    font-family: "ubuntu mono", monospace;
+    padding: 0;
+  }
+
+  img {
+    width: 250px;
+  }
+  table {
+    margin: auto;
+    width: 100%;
+    height: 100%;
+    td {
+      vertical-align: middle;
+    }
+    td > div {
+      margin: auto;
+      width: 35em;
+      color: #fff;
+    }
+  }
+}
+}
+
+.screen-info {
+  margin-top: 2em;
+}
+
+.prog-bar {
+  margin-top: 1em;
+  margin-bottom: 1em;
+  text-align: left;
+  width: 250px;
+  border: 1px solid #fff;
+  padding: 1px;
+  div {
+    margin: 0;
+    height: 3px;
+    background: #fff;
+  }
+}
+
+.loaded {
+  position: absolute;
+  top:0;
+  right:0;
+  left:0;
+  bottom:0;
+}
+
+.loaded > table {
+  width: 100%;
+  height: 100%;
+}
+
+.loaded > table > tbody > tr > td {
+  vertical-align: top;
+}
+
+.loaded .module-list {
+  width: 10em;
+  background: #1568ae;
+  color: #fff;
+
+  li {
+    padding: 0.0em 1.25em;
+    cursor: pointer;
+  }
+  li:hover {
+    background: #105086;
+    color: #fff;
+    text-shadow: #1878cb 0px 0px 5px;
+  }
+  li:active {
+    background: #0a385f;
+  }
+  .current {
+    background: #135fa0;
+    color: #eee;
+  }
+}
+
+.loaded .module-list > ul {
+  list-style-type: none;
+  margin: 0;
+  padding: 0;
+  line-height: 2em;
+}
+
+.loaded .pane {
+  padding: 1em;
+}
+
+.pane {
+  position: relative;
+}
+
+.ace_editor {
+  position: absolute !important;
+  top: 0;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  font-size: 15px !important;
+}
+
+.type-popup {
+  position: absolute;
+  background: #3f3f3f;
+  color: #fff;
+  z-index: 999;
+  font-family: monospace;
+  font-family: "Ubuntu Mono",monospace;
+  font-size: 15px;
+
+  .expand {
+    background: #1568ae;
+    padding: 0.1em 0.5em;
+    display: inline-block;
+    cursor: pointer;
+  }
+  .display {
+    padding: 0.5em;
+  }
+}
+
+
+.choose-targets {
+  position: absolute;
+  width: 100%;
+  height: 100%;
+  background: #e8eaec;
+
+  img {
+    width: 250px;
+  }
+  table {
+    margin: auto;
+    width: 100%;
+    height: 100%;
+    td {
+      vertical-align: middle;
+      div {
+        margin: auto;
+        width: 30em;
+        color: #777;
+      }
+    }
+  }
+  ul {
+    list-style-type: none;
+    text-align: left;
+    margin-left: 0;
+    padding-left: 0;
+    li {
+      padding: 0.5em;
+    }
+    li.chosen {
+      background: #dedede;
+      color: #777;
+    }
+    li.chosen:after {
+      content: "✓";
+      float: right
+    }
+    li.chosen:hover {
+      cursor: pointer;
+      background: #777;
+      color: #fff;
+    }
+    li.choosable:hover {
+      cursor: pointer;
+      background: #777;
+      color: #fff;
+    }
+    li.unchooseable {
+      color: #ccc;
+    }
+    li.unchooseable:hover {
+      cursor: not-allowed;
+    }
+    li.done {
+      margin-top: 1em;
+      background: #1568ae;
+      color: #fff;
+      cursor: pointer;
+      display: inline-block;
+    }
+    li.done.disabled {
+      visibility: hidden;
+    }
+  }
+  .choose-info {
+    margin-top: 1em;
+    margin-bottom: 1em;
+  }
+}
+
+.switch-targets {
+  padding: 1em;
+  line-height: 2em;
+  margin-bottom: 0;
+}
+.switch-targets:hover {
+  background: #105086;
+  color: #fff;
+  text-shadow: #1878cb 0px 0px 5px;
+  cursor: pointer;
+}
+.switch-targets:active {
+  background: #0a385f;
+}

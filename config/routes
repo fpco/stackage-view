@@ -1,0 +1,9 @@
+/static StaticR Static getStatic
+
+/favicon.ico FaviconR GET
+
+/ HomeR GET
+
+/command     CommandR POST
+
+/ghcjs/home.js GhcjsHomeR GET
