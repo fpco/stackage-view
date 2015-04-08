@@ -4,6 +4,8 @@
 
 module View.ChooseTargets where
 
+
+import qualified Data.Text as T
 import           Model
 import           SharedTypes
 import           Types
@@ -23,13 +25,20 @@ chooseTargets :: Monad m
 chooseTargets targets =
   div_ (do class_ "choose-targets"
            centered_ (do img_ (src_ "/static/img/starting.png")
-                         div_ (do class_ "screen-info"
-                                  h1_ "Choose targets"
-                                  p_ (do class_ "choose-info"
-                                         "You have more than one target in your Cabal package that requries a Main module, which would result in compilation conflicts. Below you can choose which targets to view.")
-                                  ul_ (do forM_ targetList (renderTarget targets)
-                                          done (map fst (filter snd targetList))))))
+                         div_ choose))
   where targetList = M.toList targets
+        choose =
+          do class_ "screen-info"
+             h1_ "Choose targets"
+             p_ (do class_ "choose-info"
+                    text (T.concat msg))
+             ul_ (do forM_ targetList (renderTarget targets)
+                     done (map fst (filter snd targetList)))
+        msg =
+          ["You have more than one target in your Cabal "
+          ,"package that requries a Main module, which would "
+          ,"result in compilation conflicts. Below you can "
+          ,"choose which targets to view."]
 
 -- | Done choosing targets. Only proceed if at least one target was chosen.
 done :: Monad m => [TargetIdent] -> ReactT State m ()
@@ -47,12 +56,7 @@ done idents =
 renderTarget :: Monad m
              => Map TargetIdent Bool -> (TargetIdent,Bool) -> ReactT State m ()
 renderTarget targets (ident,chosen) =
-  li_ (do let unchoosable =
-                needsMain ident &&
-                any (\(ident',chosen') -> ident' /= ident && needsMain ident' &&
-                                                             chosen')
-                    (M.toList targets)
-          class_ (if chosen
+  li_ (do class_ (if chosen
                      then "chosen"
                      else if unchoosable
                              then "unchooseable"
@@ -74,3 +78,9 @@ renderTarget targets (ident,chosen) =
               do strong_ "Test suite"
                  " "
                  text name)
+  where unchoosable =
+          needsMain ident &&
+          any (\(ident',chosen') ->
+                 (ident' /= ident) &&
+                 (needsMain ident' && chosen'))
+              (M.toList targets)

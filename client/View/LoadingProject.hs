@@ -18,23 +18,24 @@ loading :: Monad m
         => LoadingStatus -> ReactT state m ()
 loading prog =
   div_ (do class_ "loading"
-           centered_ (do img_ (src_ "/static/img/loading.png")
-                         case prog of
-                           NotLoading ->
-                             screenInfo "Initializing\8230"
-                           Loading n total msg ->
-                             do progressBar n total
-                                screenInfo
-                                  (text (T.pack (show n) <>
-                                         "/" <>
-                                         T.pack (show total) <>
-                                         ": " <>
-                                         msg))
-                           _ ->
-                             screenInfo "Done!"))
+           centered_ page)
   where screenInfo inner =
           p_ (do class_ "screen-info"
                  inner)
+        page =
+          do img_ (src_ "/static/img/loading.png")
+             case prog of
+               NotLoading ->
+                 screenInfo "Initializing\8230"
+               Loading n total msg ->
+                 do progressBar n total
+                    screenInfo
+                      (text (T.pack (show n) <>
+                             "/" <>
+                             T.pack (show total) <>
+                             ": " <>
+                             msg))
+               _ -> screenInfo "Done!"
 
 -- | Progress bar display for loading screen.
 progressBar :: Monad m
@@ -43,9 +44,12 @@ progressBar n total =
   div_ (do class_ "prog-bar"
            div_ (do class_ "prog"
                     style "width"
-                          (T.pack (show (round (width *
-                                                (n' / total')) :: Int)) <>
+                          (T.pack (show ratio) <>
                            "px")))
-  where width = 250 :: Double
+  where ratio :: Int
+        ratio =
+          round (width *
+                 (n' / total'))
+        width = 250 :: Double
         n' = fromIntegral n
         total' = fromIntegral total

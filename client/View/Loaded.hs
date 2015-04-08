@@ -46,15 +46,17 @@ modules l =
             onClick (const (atomically .
                             flip writeTVar (ChooseTargetsState (_loadedTargets l))))
             "Switch targets")
-     ul_ (forM_ (_loadedModules l)
-                (\fp ->
-                   li_ (do case _loadedCurrent l of
-                             Just (cur,_,_,_,_,_)
-                               | cur == fp ->
-                                 class_ "current"
-                             _ -> return ()
-                           onClick (const (flip viewModule (Loc fp 0 0)))
-                           text fp)))
+     ul_ (forM_ (_loadedModules l) (moduleChoice l))
+
+-- | Render a moduel choice.
+moduleChoice :: Loaded -> Text -> ReactT State m ()
+moduleChoice l fp =
+  li_ (do case _loadedCurrent l of
+            Just (cur,_,_,_,_,_)
+              | cur == fp -> class_ "current"
+            _ -> return ()
+          onClick (const (flip viewModule (Loc fp 0 0)))
+          text fp)
 
 -- | The code viewing pane.
 pane :: (MonadIO m)
