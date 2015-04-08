@@ -34,19 +34,7 @@ loaded ace l =
            case (,) <$> _loadedTypeInfo l <*> _loadedMouseXY l of
              Nothing -> return ()
              Just ((_,_,typ'),(x,y)) ->
-               div_ (do class_ "type-popup"
-                        style "top"
-                              (T.pack (show (y + 14)) <>
-                               "px")
-                        style "left"
-                              (T.pack (show x) <>
-                               "px")
-                        div_ (do class_ "expand"
-                                 title_ "Expand selection"
-                                 onClick (const expandSelection)
-                                 "\8596")
-                        div_ (do class_ "display"
-                                 text typ')))
+               typePopup typ' x y)
 
 -- | Module list.
 modules :: Monad m
@@ -96,3 +84,20 @@ pane ace mcur =
                Ace.endline_ el
                Ace.endcol_ ec)
        _ -> "Choose a module!"
+
+-- | Show the type popup.
+typePopup :: Monad m => Text -> Int -> Int -> ReactT State m ()
+typePopup typ' x y =
+  div_ (do class_ "type-popup"
+           style "top"
+                 (T.pack (show (y + 14)) <>
+                  "px")
+           style "left"
+                 (T.pack (show x) <>
+                  "px")
+           div_ (do class_ "expand"
+                    title_ "Expand selection"
+                    onClick (const expandSelection)
+                    "\8596")
+           div_ (do class_ "display"
+                    text typ'))
