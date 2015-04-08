@@ -14,6 +14,12 @@ getHomeR =
 
 getGhcjsHomeR :: Handler TypedContent
 getGhcjsHomeR =
-  $(ghcjsFileDev development
-                 ["-isrc","-XCPP","-XTemplateHaskell","-package","ghcjs-react"]
-                 "src/Client/Home.hs")
+  $(ghcjsFileDev
+      development
+      ["-iclient"
+      ,"-ishared"
+      ,"-XCPP"
+      ,"-XTemplateHaskell"
+      ,"-package"
+      ,"ghcjs-react"]
+      "app/Client.hs")

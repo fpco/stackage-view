@@ -6,3 +6,5 @@
 :set -DDEVELOPMENT=1
 :set -DINGHCI=1
 :set -package foreign-store
+
+:set -iclient/ -iserver/ -i../ghcjs-react/src/

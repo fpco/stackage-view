@@ -23,7 +23,7 @@ Flag library-only
     Default:       False
 
 library
-    hs-source-dirs: src/
+    hs-source-dirs: server/, shared/
     exposed-modules: Application
                      Foundation
                      Import
@@ -123,8 +123,8 @@ executable         fpview
     if flag(library-only)
         Buildable: False
 
-    main-is:           Main.hs
-    hs-source-dirs:    src/main/
+    main-is:           Server.hs
+    hs-source-dirs:    app/
     build-depends:     base
                      , fpview
                      , optparse-applicative

@@ -1,5 +1,11 @@
-((haskell-mode . ((haskell-process-type . cabal-repl)
-                  (haskell-indent-spaces . 4)
-                  (haskell-process-use-ghci . t)))
- (hamlet-mode . ((hamlet/basic-offset . 4)
-                 (haskell-process-use-ghci . t))))
+((haskell-mode .
+  ((haskell-process-type . ghci)
+   (haskell-process-path-ghci . "ghci-ng")
+   (haskell-process-wrapper-function
+    . (lambda (args)
+        (append
+         (list "fpbuild"
+               "--docker-run-args=[\"--interactive=true\",\"--tty=false\"]"
+               "exec"
+               "--")
+         args))))))

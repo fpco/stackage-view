@@ -1,3 +1,4 @@
+{-# LANGUAGE NoMonomorphismRestriction #-}
 {-# LANGUAGE Rank2Types #-}
 {-# LANGUAGE CPP #-}
 {-# LANGUAGE TypeSynonymInstances #-}
@@ -8,39 +9,28 @@
 
 -- | React binding to Ace.
 
-module React.Ace
-  (createAce
-  ,Ace
-  ,defaultAce
-  ,aceSelectStartLine
-  ,aceSelectStartCol
-  ,aceSelectEndLine
-  ,aceSelectEndCol
-  ,aceClientX
-  ,aceClientY
-  ,onAceClick)
-  where
+module React.Ace where
 
-import Control.Concurrent.STM
-import Control.Lens hiding (coerce)
-import Control.Monad
-import GHC.Exts
-import GHCJS.Compat
-import React
-import React.Component
-import React.Internal
+import           Control.Concurrent.STM
+import           Control.Lens hiding (coerce)
+import           Control.Monad
+import qualified Data.Text as T
+import           GHC.Exts
+import           GHCJS.Compat
+import           React hiding (onClick)
+import           React.Internal
 
 #ifdef __GHCJS__
-import JavaScript.JQuery (JQuery)
-import GHCJS.Types
-import GHCJS.Marshal
-import GHCJS.DOM.Types (Element (..), Event (..))
-import GHCJS.Foreign
-import GHCJS.Types
-import GHCJS.Marshal
-import GHCJS.DOM.Types (Element (..), Event (..))
-import GHCJS.Foreign
-import GHCJS.DOM
+import           JavaScript.JQuery (JQuery)
+import           GHCJS.Types
+import           GHCJS.Marshal
+import           GHCJS.DOM.Types (Element (..), Event (..))
+import           GHCJS.Foreign
+import           GHCJS.Types
+import           GHCJS.Marshal
+import           GHCJS.DOM.Types (Element (..), Event (..))
+import           GHCJS.Foreign
+import           GHCJS.DOM
 #endif
 
 --------------------------------------------------------------------------------
@@ -54,18 +44,17 @@ data Editor_
 type Editor' = JSRef Editor_
 
 -- | Default state for instances of ace.
-defaultAce :: IO Ace
-defaultAce =
-  return (Ace Nothing)
+getDef :: IO Ace
+getDef = return (Ace Nothing)
 
 --------------------------------------------------------------------------------
 -- Component
 
 -- | Create an Ace editor component.
-createAce :: Monad m
-          => App state m                -- ^ The app.
-          -> IO (Component state Ace m) -- ^ Ace component.
-createAce app =
+new :: Monad m
+    => App state m                -- ^ The app.
+    -> IO (Component state Ace m) -- ^ Ace component.
+new app =
   createComponent
     (newClass app
               (return ())
@@ -130,6 +119,27 @@ receivingProps app l props =
               _ -> return ()
 
 --------------------------------------------------------------------------------
+-- Properties
+
+startline_ :: (Monad m) => Int -> ReactT state m ()
+startline_ =
+  attr "startline" .
+  T.pack . show
+
+startcol_ :: (Monad m) => Int -> ReactT state m ()
+startcol_ =
+  attr "startcol" .
+  T.pack . show
+
+endline_ :: (Monad m) => Int -> ReactT state m ()
+endline_ =
+  attr "endline" .
+  T.pack . show
+
+endcol_ :: (Monad m) => Int -> ReactT state m ()
+endcol_ = attr "endcol". T.pack . show
+
+--------------------------------------------------------------------------------
 -- Selection range accessors
 
 getStartLine :: JSRef a -> IO (Maybe Int)
@@ -159,30 +169,30 @@ newtype SelectEvent = SelectEvent ReactEvent
 instance IsReactEvent SelectEvent
 
 -- | When the selection changes.
-onAceClick :: Monad m => (SelectEvent -> TVar state -> IO ()) -> ReactT state m ()
-onAceClick = onEvent (EventListener "click")
+onClick :: Monad m => (SelectEvent -> TVar state -> IO ()) -> ReactT state m ()
+onClick = onEvent (EventListener "click")
 
 -- | Extract the start line from the event.
-aceSelectStartLine :: SelectEvent -> IO Int
-aceSelectStartLine = getPropInt "startLine" . coerce
+selectStartLine :: SelectEvent -> IO Int
+selectStartLine = getPropInt "startLine" . coerce
 
 -- | Extract the start col from the event.
-aceSelectStartCol :: SelectEvent -> IO Int
-aceSelectStartCol = getPropInt "startCol" . coerce
+selectStartCol :: SelectEvent -> IO Int
+selectStartCol = getPropInt "startCol" . coerce
 
 -- | Extract the end line from the event.
-aceSelectEndLine :: SelectEvent -> IO Int
-aceSelectEndLine = getPropInt "endLine" . coerce
+selectEndLine :: SelectEvent -> IO Int
+selectEndLine = getPropInt "endLine" . coerce
 
 -- | Extract the end col from the event.
-aceSelectEndCol :: SelectEvent -> IO Int
-aceSelectEndCol = getPropInt "endCol" . coerce
+selectEndCol :: SelectEvent -> IO Int
+selectEndCol = getPropInt "endCol" . coerce
 
-aceClientX :: SelectEvent -> IO Int
-aceClientX = getPropInt "clientX" . coerce
+clientX :: SelectEvent -> IO Int
+clientX = getPropInt "clientX" . coerce
 
-aceClientY :: SelectEvent -> IO Int
-aceClientY = getPropInt "clientY" . coerce
+clientY :: SelectEvent -> IO Int
+clientY = getPropInt "clientY" . coerce
 
 --------------------------------------------------------------------------------
 -- Foreign imports

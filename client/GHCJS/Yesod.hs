@@ -1,6 +1,7 @@
 {-# LANGUAGE CPP #-}
 {-# LANGUAGE OverloadedStrings #-}
 {-# LANGUAGE DeriveDataTypeable #-}
+{-# OPTIONS_GHC -fno-warn-missing-signatures #-}
 
 -- | Handy client-server communication.
 

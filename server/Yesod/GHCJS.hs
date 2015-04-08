@@ -68,10 +68,8 @@ runGhcJSAll args fp cont =
                   cont (tmpdir ++ "/all.js")
                ExitFailure e -> error ("The GHCJS process failed with exit code " ++ show e ++ "."))
   where config path tmpdir =
-          (proc' path (mkArgs tmpdir)) {close_fds = True
-                                              ,std_in = CreatePipe}
+          (proc path (mkArgs tmpdir)) {close_fds = True
+                                             ,std_in = CreatePipe}
         mkArgs tmpdir =
           [fp,"-o",tmpdir] ++
           args
-
-proc' = proc
