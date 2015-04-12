@@ -2,7 +2,7 @@
 
 -- | Default values used in the project.
 
-module FPView.Defaults where
+module Stackage.View.Defaults where
 
 import Data.Text (Text)
 

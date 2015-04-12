@@ -1,4 +1,4 @@
-name:                fpview
+name:                stackage-view
 synopsis:            General project viewer
 version:             0.0.1
 description:         FP Complete project viewer
@@ -8,7 +8,7 @@ author:              Chris Done
 maintainer:          chrisdone@fpcomplete.com
 copyright:           2014-2015 FP Complete Corporation
 category:            Development
-homepage:            https://github.com/fpco/dev-tools/tree/master/fpview#readme
+homepage:            https://github.com/fpco/stackage-view
 cabal-version:       >= 1.8
 build-type:          Simple
 extra-source-files:  README.md
@@ -36,7 +36,7 @@ library
                      SharedTypes
                      Session
 
-    exposed-modules: FPView.Cabal, FPView.Types, FPView.Defaults, FPView.Git
+    exposed-modules: Stackage.View.Cabal, Stackage.View.Types, Stackage.View.Defaults, Stackage.View.Git
 
     other-modules:     Filesystem.Path.Find, Filesystem.Loc
 

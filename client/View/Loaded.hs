@@ -49,7 +49,7 @@ modules l =
      ul_ (forM_ (_loadedModules l) (moduleChoice l))
 
 -- | Render a moduel choice.
-moduleChoice :: Loaded -> Text -> ReactT State m ()
+moduleChoice :: Monad m => Loaded -> Text -> ReactT State m ()
 moduleChoice l fp =
   li_ (do case _loadedCurrent l of
             Just (cur,_,_,_,_,_)

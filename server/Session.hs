@@ -15,9 +15,9 @@ import           Data.Set (Set)
 import qualified Data.Set as S
 import qualified Data.Text as T
 import           Distribution.Text (display)
-import           FPView.Cabal
-import           FPView.Git
-import           FPView.Types
+import           Stackage.View.Cabal
+import           Stackage.View.Git
+import           Stackage.View.Types
 import           Filesystem as FP
 import           Filesystem.Loc as FL
 import           Filesystem.Path (FilePath)

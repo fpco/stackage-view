@@ -5,10 +5,10 @@
 
 -- | Dealing with Cabal.
 
-module FPView.Cabal (getTargets,getCabalFp) where
+module Stackage.View.Cabal (getTargets,getCabalFp) where
 
-import           FPView.Defaults
-import           FPView.Types
+import           Stackage.View.Defaults
+import           Stackage.View.Types
 
 import           Control.Exception
 import           Control.Monad

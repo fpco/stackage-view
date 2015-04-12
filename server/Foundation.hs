@@ -2,7 +2,7 @@ module Foundation where
 
 import Control.Concurrent.STM.TVar
 import Data.Set (Set)
-import FPView.Types
+import Stackage.View.Types
 import IdeSession
 import Network.HTTP.Client.Conduit (Manager, HasHttpManager (getHttpManager))
 import Prelude hiding (FilePath)

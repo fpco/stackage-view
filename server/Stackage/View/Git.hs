@@ -1,6 +1,6 @@
 -- | Git utilities.
 
-module FPView.Git where
+module Stackage.View.Git where
 
 import           Control.Monad
 import           Control.Monad.IO.Class

@@ -6,7 +6,7 @@
 
 -- | All data types.
 
-module FPView.Types where
+module Stackage.View.Types where
 
 import Control.Exception (Exception)
 import Data.Set
