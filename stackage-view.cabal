@@ -126,7 +126,7 @@ executable         fpview
     main-is:           Server.hs
     hs-source-dirs:    app/
     build-depends:     base
-                     , fpview
+                     , stackage-view
                      , optparse-applicative
                      , yesod
                      , warp
@@ -140,7 +140,7 @@ test-suite test
     ghc-options:       -Wall
 
     build-depends: base
-                 , fpview
+                 , stackage-view
                  , yesod-test >= 1.4 && < 1.5
                  , yesod-core
                  , yesod
