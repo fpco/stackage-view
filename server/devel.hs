@@ -1,6 +1,6 @@
 {-# LANGUAGE CPP #-}
 {-# LANGUAGE PackageImports #-}
-import "fpview" Application (getApplicationDev)
+import "stackage-view" Application (getApplicationDev)
 import Network.Wai.Handler.Warp
     (runSettings, defaultSettings, setPort)
 import Control.Concurrent (forkIO)
