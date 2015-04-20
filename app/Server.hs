@@ -7,6 +7,7 @@ import Data.Monoid
 import Network.Wai.Handler.Warp
 import Prelude
 import System.Environment
+import System.Exit (exitSuccess)
 import Text.Read
 
 import Options.Applicative
@@ -18,8 +19,16 @@ runWithOptions opts =
   do putStrLn ("Point your browser to http://localhost:" ++ show (appPort opts) ++ "/")
      runApplication (appPort opts)
 
+handleSummary :: IO ()
+handleSummary = do
+    args <- getArgs
+    when (args == ["--summary"]) $ do
+        putStrLn "Interactive GUI explorer for your Haskell source code"
+        exitSuccess
+
 main :: IO ()
-main = do mport <- fmap (bind readMaybe . lookup "PORT") getEnvironment
+main = do handleSummary
+          mport <- fmap (bind readMaybe . lookup "PORT") getEnvironment
           bind runWithOptions
                (execParser (info (parser mport) mempty))
   where parser mport =
