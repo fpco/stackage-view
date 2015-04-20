@@ -119,7 +119,7 @@ library
     if !os(windows)
         build-depends: unix
 
-executable         fpview
+executable         stackage-view
     if flag(library-only)
         Buildable: False
 
