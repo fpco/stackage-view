@@ -1,4 +1,4 @@
--- | Main FPView display.
+-- | Main Stackage View display.
 
 module Handler.Home where
 
@@ -8,7 +8,7 @@ import Yesod.GHCJS
 getHomeR :: Handler Html
 getHomeR =
   defaultLayout
-    (do setTitle "FPView"
+    (do setTitle "Stackage View"
         $(widgetFile "home")
         toWidget [hamlet|<script src=@{GhcjsHomeR}>|])
 
