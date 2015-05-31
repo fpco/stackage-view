@@ -245,9 +245,6 @@ stringEq = undefined
 
 #endif
 
-instance Eq JSString where
-    (==) = stringEq
-
 --------------------------------------------------------------------------------
 -- Instances
 
