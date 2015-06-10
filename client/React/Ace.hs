@@ -90,7 +90,7 @@ receivingProps app l props =
               Nothing -> return ()
               Just (Ace (Just editor)) ->
                 do code' <- getValue editor
-                   when (code /= code')
+                   when (not (code `stringEq` code'))
                         (setValue editor code)
                    --
                    stateStartLine <- getStartLine props
