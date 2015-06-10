@@ -12,7 +12,7 @@ homepage:            https://github.com/fpco/stackage-view
 cabal-version:       >= 1.8
 build-type:          Simple
 extra-source-files:  README.md
-                     changelog.md
+                     CHANGELOG.md
 
 Flag dev
     Description:   Turn on development settings, like auto-reload templates.
