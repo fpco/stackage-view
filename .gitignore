@@ -17,3 +17,4 @@ cabal.sandbox.config
 TAGS
 .docker-sandbox/
 .stack-work/
+cabal-ghcjs-config

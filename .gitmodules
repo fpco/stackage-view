@@ -1,0 +1,6 @@
+[submodule "deps/ghcjs-react"]
+	path = deps/ghcjs-react
+	url = https://github.com/fpco/ghcjs-react.git
+[submodule "deps/ghcjs-jquery"]
+	path = deps/ghcjs-jquery
+	url = git://github.com/ghcjs/ghcjs-jquery.git

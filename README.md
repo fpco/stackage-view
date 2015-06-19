@@ -13,6 +13,33 @@ provides a way to look around the source modules.
 On the left are modules of the project and on the right is the source
 of the module.
 
+## Building
+
+stackage-view is built with stack.  In order to ease installing build
+dependencies, the default configuration is based on a docker image,
+which needs to be pulled:
+
+    $ stack docker pull
+
+After this, the GHCJS dependencies need to be installed into the
+image:
+
+    $ ./dev-scripts/install-ghcjs-deps.sh
+
+Then, we can build stackage-view:
+
+   $ stack build
+
+To install it, copy these binaries into some directory on your PATH.
+For example:
+
+   $ rm -f ~/.cabal/bin/stackage-view
+   $ cp .stack-work/install/x86_64-linux/lts-2.14/7.8.4/bin/stackage-view ~/.cabal/bin/stackage-view
+
+In order for it to work, you'll need to have
+[ide-backend-server](https://github.com/fpco/ide-backend) installed on
+your PATH.
+
 ## Starting
 
 In a Cabal project directory, run `stackage-view` and you should see:
