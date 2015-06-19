@@ -16,10 +16,24 @@ getGhcjsHomeR :: Handler TypedContent
 getGhcjsHomeR =
   $(ghcjsFileDev
       development
-      ["-iclient"
+      (["-iclient"
       ,"-ishared"
       ,"-XCPP"
       ,"-XTemplateHaskell"
-      ,"-package"
-      ,"ghcjs-react"]
+      ,"-hide-all-packages"] ++ concatMap (\pkg -> ["-package", pkg])
+        ["aeson"
+        ,"attoparsec"
+        ,"base"
+        ,"containers"
+        ,"data-default"
+        ,"ghcjs-base"
+        ,"ghcjs-dom"
+        ,"ghcjs-jquery"
+        ,"ghcjs-react"
+        ,"lens"
+        ,"mtl"
+        ,"stm"
+        ,"text"
+        ])
+      ["client", "shared"]
       "app/Client.hs")

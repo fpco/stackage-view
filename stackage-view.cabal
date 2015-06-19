@@ -108,6 +108,7 @@ library
                  , attoparsec
                  , mtl
                  , resourcet
+                 , conduit-combinators
 
                  , unordered-containers
                  , vector
